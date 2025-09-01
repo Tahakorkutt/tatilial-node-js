@@ -44,12 +44,14 @@ console.log("\n✅ Path kontrolü tamamlandı.\n");
 // MODELLER
 const Customer = require("./config/config");
 const AfrikaVeOrtadoguTurlari = require("./models/ AfrikaVeOrtadoguTurlari/AfrikaVeOrtadoguTurlariModel");
-const dubaiturlari = require("./models/DubaiTurlari/dubaiturlari");
 const ortaLatinAmerikaTurlari = require("./models/OrtaLatinAmerikaTurları/ortaLatinAmerıkaTurları");
 const AsyaVeUzakDoguTuru = require("./models/AsyaVeUzakDoguTuru/AsyaVeUzakDoguTuru");
 const yunanAdalariTurlariModel = require("./models/yunanAdalariTurları/yunanAdalarıTurlarıModel");
 const iletisimModel = require("./models/Iletısım/iletısımModel");
 const rezervasyon = require("./models/rezervation/rezervasyon");
+
+const dubaiturlari = require("./models/DubaiTurlari/dubaiturlari");
+
 
 // Express app
 const app = express();
@@ -74,8 +76,9 @@ const AppDataSource = new DataSource({
   ...ormconfig,
   entities: [
     Customer,
-    AfrikaVeOrtadoguTurlari,
     dubaiturlari,
+    
+    AfrikaVeOrtadoguTurlari,
     ortaLatinAmerikaTurlari,
     AsyaVeUzakDoguTuru,
     yunanAdalariTurlariModel,
@@ -90,6 +93,54 @@ const protectedRoutes = express.Router();
 protectedRoutes.use(checkUser);
 
 // --- ENDPOINTLER ---
+
+// Dubai Turları
+app.get(`${basePath}/dubai-turlari`, async (req, res) => {
+  try {
+    const turlar = await AppDataSource.getRepository(dubaiturlari).find();
+    res.json(turlar);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+
+app.post(`${basePath}/dubai-turlari`, async (req, res) => {
+  try {
+    const newTur = AppDataSource.getRepository(dubaiturlari).create(req.body);
+    const result = await AppDataSource.getRepository(dubaiturlari).save(newTur);
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+app.put(`${basePath}/dubai-turlari/:id`, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const repo = AppDataSource.getRepository(dubaiturlari);
+    const tur = await repo.findOneBy({ id });
+    if (!tur) return res.status(404).json({ message: "Tur bulunamadı." });
+    await repo.update(id, req.body);
+    res.json(await repo.findOneBy({ id }));
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.delete(`${basePath}/dubai-turlari/:id`, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const repo = AppDataSource.getRepository(dubaiturlari);
+    const tur = await repo.findOneBy({ id });
+    if (!tur) return res.status(404).json({ message: "Tur bulunamadı." });
+    await repo.remove(tur);
+    res.json({ message: "Tur başarıyla silindi." });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 // asyaortadoğu
 app.get(`${basePath}/asya-ve-uzakdoguturlari`, async (req, res) => {
