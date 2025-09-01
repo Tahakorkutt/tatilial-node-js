@@ -91,6 +91,103 @@ protectedRoutes.use(checkUser);
 
 // --- ENDPOINTLER ---
 
+// asyaortadoğu
+app.get(`${basePath}/asya-ve-uzakdoguturlari`, async (req, res) => {
+  try {
+    const turlar = await AppDataSource.getRepository(AsyaVeUzakDoguTuru).find();
+    res.json(turlar);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+app.post(`${basePath}/asya-ve-uzakdoguturlari`, async (req, res) => {
+  try {
+    const newTur = AppDataSource.getRepository(AsyaVeUzakDoguTuru).create(req.body);
+    const result = await AppDataSource.getRepository(AsyaVeUzakDoguTuru).save(newTur);
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+app.put(`${basePath}asya-ve-uzakdoguturlari/:id`, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const repo = AppDataSource.getRepository(AsyaVeUzakDoguTuru);
+    const tur = await repo.findOneBy({ id });
+    if (!tur) return res.status(404).json({ message: "Tur bulunamadı." });
+    await repo.update(id, req.body);
+    res.json(await repo.findOneBy({ id }));
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.delete(`${basePath}asya-ve-uzakdoguturlari/:id`, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const repo = AppDataSource.getRepository(AsyaVeUzakDoguTuru);
+    const tur = await repo.findOneBy({ id });
+    if (!tur) return res.status(404).json({ message: "Tur bulunamadı." });
+    await repo.remove(tur);
+    res.json({ message: "Tur başarıyla silindi." });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+
+// iletişim start
+
+app.post(`${basePath}/iletisim`, async (req, res) => {
+  try {
+    const body = req.body;
+
+    // Veritabanına kaydet
+    const newEntry = AppDataSource.getRepository(iletisimModel).create(body);
+    const result = await AppDataSource.getRepository(iletisimModel).save(newEntry);
+
+    // Nodemailer ayarları
+    const transporter = nodemailer.createTransport({
+      host: "ampere.ishostname.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: "info@tatilial.com",
+        pass: "20011969Og", // Burada gerçek şifren var
+      },
+    });
+
+    // Mail içeriği
+    const mailOptions = {
+      from: '"Tatilial İletişim" <info@tatilial.com>',
+      to: "info@tatilial.com",
+      subject: `Yeni İletişim Talebi: ${body.konu || "Konu belirtilmemiş"}`,
+      text: `
+Yeni iletişim talebi alındı:
+
+Ad Soyad: ${body.adSoyad || "-"}
+Telefon: ${body.telefon || "-"}
+Konu: ${body.konu || "-"}
+Mesaj: ${body.mesaj || "-"}
+      `,
+    };
+
+    // Mail gönderimi
+    const mailInfo = await transporter.sendMail(mailOptions);
+    console.log("📧 Mail başarıyla gönderildi:", mailInfo.response);
+
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("🚨 Hata:", error);
+    res.status(400).json({ message: error.message });
+  }
+});
+
+
 // Yunan Adaları
 app.get(`${basePath}/yunan-adalari`, async (req, res) => {
   try {
@@ -100,6 +197,58 @@ app.get(`${basePath}/yunan-adalari`, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+
+
+//orta latin amerika 
+app.get(`${basePath}/orta-latinAmerika-turlari`, async (req, res) => {
+  try {
+    const turlar = await AppDataSource.getRepository(ortaLatinAmerikaTurlari).find();
+    res.json(turlar);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+
+app.post(`${basePath}/orta-latinAmerika-turlari`, async (req, res) => {
+  try {
+    const newTur = AppDataSource.getRepository(ortaLatinAmerikaTurlari).create(req.body);
+    const result = await AppDataSource.getRepository(ortaLatinAmerikaTurlari).save(newTur);
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+app.put(`${basePath}/orta-latinAmerika-turlari/:id`, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const repo = AppDataSource.getRepository(ortaLatinAmerikaTurlari);
+    const tur = await repo.findOneBy({ id });
+    if (!tur) return res.status(404).json({ message: "Tur bulunamadı." });
+    await repo.update(id, req.body);
+    res.json(await repo.findOneBy({ id }));
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.delete(`${basePath}/orta-latinAmerika-turlari/:id`, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const repo = AppDataSource.getRepository(ortaLatinAmerikaTurlari);
+    const tur = await repo.findOneBy({ id });
+    if (!tur) return res.status(404).json({ message: "Tur bulunamadı." });
+    await repo.remove(tur);
+    res.json({ message: "Tur başarıyla silindi." });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
 
 // Afrika ve Ortadoğu Turları
 app.get(`${basePath}/afrika-ve-ortadogu-turlari`, async (req, res) => {
@@ -146,6 +295,8 @@ app.delete(`${basePath}/afrika-ve-ortadogu-turlari/:id`, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+
 
 // Rezervasyon
 app.post(`${basePath}/rezervasyon`, async (req, res) => {
