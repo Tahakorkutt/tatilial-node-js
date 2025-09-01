@@ -180,6 +180,7 @@ app.post(`${basePath}/rezervasyon`, async (req, res) => {
   }
 });
 
+
 // ---- DATABASE VE SERVER BAŞLAT ----
 AppDataSource.initialize()
   .then(() => {
@@ -196,7 +197,6 @@ AppDataSource.initialize()
     // Server başlat
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`🚀 Server is running on port ${PORT}`);
-      console.log(`👉 Tüm endpointler basePath ile: https://node.tatilial.com${basePath}`);
     });
   })
   .catch((err) => {
